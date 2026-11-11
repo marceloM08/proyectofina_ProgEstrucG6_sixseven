@@ -29,13 +29,23 @@
                             <div class="row g-2">
                                 <div class="col-12 col-sm-4">
                                     <label for="monto" class="form-label">Monto</label>
-                                    <input type="number" id="monto" class="form-control"
-                                           min="0.01" step="0.01" placeholder="Ejemplo: 250">
+                                    <input
+                                        type="number"
+                                        id="monto"
+                                        class="form-control"
+                                        min="0.01"
+                                        step="0.01"
+                                        placeholder="Ejemplo: 250"
+                                    >
                                 </div>
 
                                 <div class="col-12 col-sm-4">
                                     <label for="fecha" class="form-label">Fecha</label>
-                                    <input type="date" id="fecha" class="form-control">
+                                    <input
+                                        type="date"
+                                        id="fecha"
+                                        class="form-control"
+                                    >
                                 </div>
 
                                 <div class="col-12 col-sm-4">
@@ -49,31 +59,46 @@
 
                                 <div class="col-12">
                                     <label for="descripcion" class="form-label">Descripción</label>
-                                    <input type="text" id="descripcion" class="form-control"
-                                           placeholder="Ejemplo: Almuerzo en la universidad">
+                                    <input
+                                        type="text"
+                                        id="descripcion"
+                                        class="form-control"
+                                        placeholder="Ejemplo: Almuerzo en la universidad"
+                                    >
                                 </div>
 
                                 <div class="col-12 col-sm-6">
                                     <label for="lugar" class="form-label">Lugar</label>
-                                    <input type="text" id="lugar" class="form-control"
-                                           placeholder="Ejemplo: Cafetería X">
+                                    <input
+                                        type="text"
+                                        id="lugar"
+                                        class="form-control"
+                                        placeholder="Ejemplo: Cafetería X"
+                                    >
                                 </div>
 
                                 <div class="col-12 col-sm-6">
                                     <label for="personas" class="form-label">Personas</label>
-                                    <input type="text" id="personas" class="form-control"
-                                           placeholder="Ejemplo: Ana, Luis">
+                                    <input
+                                        type="text"
+                                        id="personas"
+                                        class="form-control"
+                                        placeholder="Ejemplo: Ana, Luis"
+                                    >
                                 </div>
 
                                 <div class="col-12">
-                                    <button id="btnAgregar" class="btn btn-success w-100">
+                                    <button
+                                        id="btnAgregar"
+                                        class="btn btn-success w-100"
+                                    >
                                         Agregar a pendientes
                                     </button>
                                 </div>
                             </div>
                         </section>
 
-                        <!-- 2. Categorizar -->
+                        <!-- 2. Categorizar gasto -->
                         <section class="mb-4">
                             <h2 class="h6 text-muted">2. Categorizar siguiente gasto</h2>
 
@@ -86,7 +111,10 @@
                                 </div>
 
                                 <div class="col-12 col-sm-4">
-                                    <button id="btnCategorizar" class="btn btn-primary w-100">
+                                    <button
+                                        id="btnCategorizar"
+                                        class="btn btn-primary w-100"
+                                    >
                                         Confirmar gasto
                                     </button>
                                 </div>
@@ -97,7 +125,10 @@
                         <section class="mb-4">
                             <h2 class="h6 text-muted">3. Última operación</h2>
 
-                            <button id="btnDeshacer" class="btn btn-warning w-100">
+                            <button
+                                id="btnDeshacer"
+                                class="btn btn-warning w-100"
+                            >
                                 Deshacer último gasto
                             </button>
                         </section>
@@ -133,7 +164,10 @@
                         <section class="mb-4">
                             <h2 class="h6 text-muted">Árbol de categorías</h2>
 
-                            <pre id="arbol" class="bg-light border rounded p-3 small mb-0"></pre>
+                            <pre
+                                id="arbol"
+                                class="bg-light border rounded p-3 small mb-0"
+                            ></pre>
                         </section>
 
                         <!-- 6. Grafo -->
@@ -165,10 +199,6 @@
             alerta.classList.remove("d-none");
         }
 
-        function ocultarAlerta() {
-            alerta.classList.add("d-none");
-        }
-
         function cargarCategorias(categorias) {
             selectCategoria.innerHTML =
                 '<option value="">Seleccione una categoría</option>';
@@ -184,8 +214,11 @@
         function cargarGastos(gastos) {
             tablaGastos.innerHTML = "";
 
+            let suma = 0;
+
             if (gastos.length === 0) {
                 const fila = document.createElement("tr");
+
                 fila.innerHTML = `
                     <td colspan="8" class="text-center text-muted">
                         No hay gastos registrados.
@@ -193,29 +226,30 @@
                 `;
 
                 tablaGastos.appendChild(fila);
-                return;
+            } else {
+                gastos.forEach(gasto => {
+                    suma += Number(gasto.monto);
+
+                    const personas = Array.isArray(gasto.personas)
+                        ? gasto.personas.join(", ")
+                        : (gasto.personas || "—");
+
+                    const fila = document.createElement("tr");
+
+                    fila.innerHTML = `
+                        <td>${gasto.id}</td>
+                        <td>${gasto.descripcion}</td>
+                        <td>C$ ${Number(gasto.monto).toFixed(2)}</td>
+                        <td>${gasto.fecha}</td>
+                        <td>${gasto.categoria || "Sin categoría"}</td>
+                        <td>${gasto.metodo_pago || "—"}</td>
+                        <td>${gasto.lugar || "—"}</td>
+                        <td>${personas || "—"}</td>
+                    `;
+
+                    tablaGastos.appendChild(fila);
+                });
             }
-
-            let suma = 0;
-
-            gastos.forEach(gasto => {
-                suma += gasto.monto;
-
-                const fila = document.createElement("tr");
-
-                fila.innerHTML = `
-                    <td>${gasto.id}</td>
-                    <td>${gasto.descripcion}</td>
-                    <td>C$ ${gasto.monto.toFixed(2)}</td>
-                    <td>${gasto.fecha}</td>
-                    <td>${gasto.categoria || "Sin categoría"}</td>
-                    <td>${gasto.metodo_pago}</td>
-                    <td>${gasto.lugar || "—"}</td>
-                    <td>${gasto.personas.join(", ") || "—"}</td>
-                `;
-
-                tablaGastos.appendChild(fila);
-            });
 
             total.textContent = `C$ ${suma.toFixed(2)}`;
         }
@@ -227,7 +261,7 @@
         function cargarGrafo(aristas) {
             grafo.innerHTML = "";
 
-            if (aristas.length === 0) {
+            if (!aristas || aristas.length === 0) {
                 const item = document.createElement("li");
                 item.className = "list-group-item text-center text-muted";
                 item.textContent = "No hay relaciones registradas.";
@@ -238,7 +272,7 @@
             aristas.forEach(arista => {
                 const item = document.createElement("li");
                 item.className =
-                    "list-group-item d-flex justify-content-between";
+                    "list-group-item d-flex justify-content-between align-items-center";
 
                 item.innerHTML = `
                     <span>${arista.origen} → ${arista.destino}</span>
@@ -250,62 +284,68 @@
         }
 
         function actualizarVista(datos) {
-            cargarCategorias(datos.categorias);
-            cargarGastos(datos.gastos);
-            cargarArbol(datos.arbol);
-            cargarGrafo(datos.aristas);
+            cargarCategorias(datos.categorias || []);
+            cargarGastos(datos.gastos || []);
+            cargarArbol(datos.arbol || "");
+            cargarGrafo(datos.aristas || []);
         }
 
         async function enviar(url, metodo = "GET", cuerpo = null) {
-    try {
-        const opciones = { method: metodo };
+            try {
+                const opciones = { method: metodo };
 
-        if (cuerpo) {
-            opciones.headers = {
-                "Content-Type": "application/json"
-            };
-            opciones.body = JSON.stringify(cuerpo);
+                if (cuerpo) {
+                    opciones.headers = {
+                        "Content-Type": "application/json"
+                    };
+                    opciones.body = JSON.stringify(cuerpo);
+                }
+
+                const respuesta = await fetch(url, opciones);
+
+                if (!respuesta.ok) {
+                    const textoError = await respuesta.text();
+                    console.error(
+                        "Error HTTP:",
+                        respuesta.status,
+                        textoError
+                    );
+
+                    mostrarAlerta(
+                        `Error del servidor: ${respuesta.status}. Revisa la consola de Flask.`,
+                        "danger"
+                    );
+
+                    return;
+                }
+
+                const datos = await respuesta.json();
+
+                if (datos.datos) {
+                    actualizarVista(datos.datos);
+                }
+
+                if (datos.exito) {
+                    mostrarAlerta(
+                        datos.mensaje || "Operación realizada.",
+                        "success"
+                    );
+                } else {
+                    mostrarAlerta(
+                        datos.mensaje || "Ocurrió un error.",
+                        "danger"
+                    );
+                }
+            } catch (error) {
+                console.error("Error en fetch:", error);
+
+                mostrarAlerta(
+                    "No se pudo conectar con el servidor.",
+                    "danger"
+                );
+            }
         }
 
-        const respuesta = await fetch(url, opciones);
-
-        if (!respuesta.ok) {
-            const texto = await respuesta.text();
-            console.error("Error HTTP:", respuesta.status, texto);
-
-            mostrarAlerta(
-                `Error del servidor: ${respuesta.status}. Revisa la consola de Flask.`,
-                "danger"
-            );
-            return;
-        }
-
-        const datos = await respuesta.json();
-
-        if (datos.datos) {
-            actualizarVista(datos.datos);
-        }
-
-        if (datos.exito) {
-            mostrarAlerta(
-                datos.mensaje || "Operación realizada.",
-                "success"
-            );
-        } else {
-            mostrarAlerta(
-                datos.mensaje || "Ocurrió un error.",
-                "danger"
-            );
-        }
-    } catch (error) {
-        console.error("Error en fetch:", error);
-
-        mostrarAlerta(
-            "No se pudo conectar con el servidor.",
-            "danger"
-        );
-    }
-}
         document.getElementById("btnAgregar").addEventListener("click", () => {
             const cuerpo = {
                 monto: document.getElementById("monto").value,
@@ -336,7 +376,6 @@
             enviar("/api/deshacer", "POST");
         });
 
-        // Carga inicial
         enviar("/api/estado", "GET");
     </script>
 </body>
