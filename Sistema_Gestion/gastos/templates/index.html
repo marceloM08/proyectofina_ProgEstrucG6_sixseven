@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Gestor de Gastos</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-light">
+
+    <main class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-12 col-lg-9">
+
+                <div class="card shadow-sm">
+                    <div class="card-header bg-primary text-white">
+                        <h1 class="h5 mb-0">Gestor de Gastos</h1>
+                    </div>
+
+                    <div class="card-body">
+                        <div id="alerta" class="alert alert-info d-none" role="alert"></div>
+
+                        <!-- 1. Registrar gasto -->
+                        <section class="mb-4">
+                            <h2 class="h6 text-muted">1. Registrar gasto</h2>
+
+                            <div class="row g-2">
+                                <div class="col-12 col-sm-4">
+                                    <label for="monto" class="form-label">Monto</label>
+                                    <input type="number" id="monto" class="form-control"
+                                           min="0.01" step="0.01" placeholder="Ejemplo: 250">
+                                </div>
+
+                                <div class="col-12 col-sm-4">
+                                    <label for="fecha" class="form-label">Fecha</label>
+                                    <input type="date" id="fecha" class="form-control">
+                                </div>
+
+                                <div class="col-12 col-sm-4">
+                                    <label for="metodo_pago" class="form-label">Método de pago</label>
+                                    <select id="metodo_pago" class="form-select">
+                                        <option value="Efectivo">Efectivo</option>
+                                        <option value="Tarjeta">Tarjeta</option>
+                                        <option value="Transferencia">Transferencia</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-12">
+                                    <label for="descripcion" class="form-label">Descripción</label>
+                                    <input type="text" id="descripcion" class="form-control"
+                                           placeholder="Ejemplo: Almuerzo en la universidad">
+                                </div>
+
+                                <div class="col-12 col-sm-6">
+                                    <label for="lugar" class="form-label">Lugar</label>
+                                    <input type="text" id="lugar" class="form-control"
+                                           placeholder="Ejemplo: Cafetería X">
+                                </div>
+
+                                <div class="col-12 col-sm-6">
+                                    <label for="personas" class="form-label">Personas</label>
+                                    <input type="text" id="personas" class="form-control"
+                                           placeholder="Ejemplo: Ana, Luis">
+                                </div>
+
+                                <div class="col-12">
+                                    <button id="btnAgregar" class="btn btn-success w-100">
+                                        Agregar a pendientes
+                                    </button>
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- 2. Categorizar -->
+                        <section class="mb-4">
+                            <h2 class="h6 text-muted">2. Categorizar siguiente gasto</h2>
+
+                            <div class="row g-2 align-items-end">
+                                <div class="col-12 col-sm-8">
+                                    <label for="categoria_id" class="form-label">Categoría</label>
+                                    <select id="categoria_id" class="form-select">
+                                        <option value="">Seleccione una categoría</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-12 col-sm-4">
+                                    <button id="btnCategorizar" class="btn btn-primary w-100">
+                                        Confirmar gasto
+                                    </button>
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- 3. Deshacer -->
+                        <section class="mb-4">
+                            <h2 class="h6 text-muted">3. Última operación</h2>
+
+                            <button id="btnDeshacer" class="btn btn-warning w-100">
+                                Deshacer último gasto
+                            </button>
+                        </section>
+
+                        <!-- 4. Gastos registrados -->
+                        <section class="mb-4">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h2 class="h6 text-muted mb-0">Gastos registrados</h2>
+                                <span id="total" class="badge bg-secondary">C$ 0.00</span>
+                            </div>
+
+                            <div class="table-responsive mt-3">
+                                <table class="table table-striped table-hover align-middle">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Descripción</th>
+                                            <th>Monto</th>
+                                            <th>Fecha</th>
+                                            <th>Categoría</th>
+                                            <th>Método</th>
+                                            <th>Lugar</th>
+                                            <th>Personas</th>
+                                        </tr>
+                                    </thead>
+
+                                    <tbody id="tablaGastos"></tbody>
+                                </table>
+                            </div>
+                        </section>
+
+                        <!-- 5. Árbol -->
+                        <section class="mb-4">
+                            <h2 class="h6 text-muted">Árbol de categorías</h2>
+
+                            <pre id="arbol" class="bg-light border rounded p-3 small mb-0"></pre>
+                        </section>
+
+                        <!-- 6. Grafo -->
+                        <section>
+                            <h2 class="h6 text-muted">Relaciones del grafo</h2>
+
+                            <ul id="grafo" class="list-group mt-3"></ul>
+                        </section>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        const alerta = document.getElementById("alerta");
+        const selectCategoria = document.getElementById("categoria_id");
+        const tablaGastos = document.getElementById("tablaGastos");
+        const arbol = document.getElementById("arbol");
+        const grafo = document.getElementById("grafo");
+        const total = document.getElementById("total");
+
+        function mostrarAlerta(mensaje, tipo = "info") {
+            alerta.className = `alert alert-${tipo}`;
+            alerta.textContent = mensaje;
+            alerta.classList.remove("d-none");
+        }
+
+        function ocultarAlerta() {
+            alerta.classList.add("d-none");
+        }
+
+        function cargarCategorias(categorias) {
+            selectCategoria.innerHTML =
+                '<option value="">Seleccione una categoría</option>';
+
+            categorias.forEach(categoria => {
+                const opcion = document.createElement("option");
+                opcion.value = categoria.id;
+                opcion.textContent = categoria.nombre;
+                selectCategoria.appendChild(opcion);
+            });
+        }
+
+        function cargarGastos(gastos) {
+            tablaGastos.innerHTML = "";
+
+            if (gastos.length === 0) {
+                const fila = document.createElement("tr");
+                fila.innerHTML = `
+                    <td colspan="8" class="text-center text-muted">
+                        No hay gastos registrados.
+                    </td>
+                `;
+
+                tablaGastos.appendChild(fila);
+                return;
+            }
+
+            let suma = 0;
+
+            gastos.forEach(gasto => {
+                suma += gasto.monto;
+
+                const fila = document.createElement("tr");
+
+                fila.innerHTML = `
+                    <td>${gasto.id}</td>
+                    <td>${gasto.descripcion}</td>
+                    <td>C$ ${gasto.monto.toFixed(2)}</td>
+                    <td>${gasto.fecha}</td>
+                    <td>${gasto.categoria || "Sin categoría"}</td>
+                    <td>${gasto.metodo_pago}</td>
+                    <td>${gasto.lugar || "—"}</td>
+                    <td>${gasto.personas.join(", ") || "—"}</td>
+                `;
+
+                tablaGastos.appendChild(fila);
+            });
+
+            total.textContent = `C$ ${suma.toFixed(2)}`;
+        }
+
+        function cargarArbol(texto) {
+            arbol.textContent = texto || "No hay categorías registradas.";
+        }
+
+        function cargarGrafo(aristas) {
+            grafo.innerHTML = "";
+
+            if (aristas.length === 0) {
+                const item = document.createElement("li");
+                item.className = "list-group-item text-center text-muted";
+                item.textContent = "No hay relaciones registradas.";
+                grafo.appendChild(item);
+                return;
+            }
+
+            aristas.forEach(arista => {
+                const item = document.createElement("li");
+                item.className =
+                    "list-group-item d-flex justify-content-between";
+
+                item.innerHTML = `
+                    <span>${arista.origen} → ${arista.destino}</span>
+                    <span class="badge bg-primary">${arista.tipo}</span>
+                `;
+
+                grafo.appendChild(item);
+            });
+        }
+
+        function actualizarVista(datos) {
+            cargarCategorias(datos.categorias);
+            cargarGastos(datos.gastos);
+            cargarArbol(datos.arbol);
+            cargarGrafo(datos.aristas);
+        }
+
+        async function enviar(url, metodo = "GET", cuerpo = null) {
+    try {
+        const opciones = { method: metodo };
+
+        if (cuerpo) {
+            opciones.headers = {
+                "Content-Type": "application/json"
+            };
+            opciones.body = JSON.stringify(cuerpo);
+        }
+
+        const respuesta = await fetch(url, opciones);
+
+        if (!respuesta.ok) {
+            const texto = await respuesta.text();
+            console.error("Error HTTP:", respuesta.status, texto);
+
+            mostrarAlerta(
+                `Error del servidor: ${respuesta.status}. Revisa la consola de Flask.`,
+                "danger"
+            );
+            return;
+        }
+
+        const datos = await respuesta.json();
+
+        if (datos.datos) {
+            actualizarVista(datos.datos);
+        }
+
+        if (datos.exito) {
+            mostrarAlerta(
+                datos.mensaje || "Operación realizada.",
+                "success"
+            );
+        } else {
+            mostrarAlerta(
+                datos.mensaje || "Ocurrió un error.",
+                "danger"
+            );
+        }
+    } catch (error) {
+        console.error("Error en fetch:", error);
+
+        mostrarAlerta(
+            "No se pudo conectar con el servidor.",
+            "danger"
+        );
+    }
+}
+        document.getElementById("btnAgregar").addEventListener("click", () => {
+            const cuerpo = {
+                monto: document.getElementById("monto").value,
+                descripcion: document.getElementById("descripcion").value,
+                fecha: document.getElementById("fecha").value,
+                metodo_pago: document.getElementById("metodo_pago").value,
+                lugar: document.getElementById("lugar").value,
+                personas: document.getElementById("personas").value
+            };
+
+            enviar("/api/agregar", "POST", cuerpo);
+        });
+
+        document.getElementById("btnCategorizar").addEventListener("click", () => {
+            const categoria_id = selectCategoria.value;
+
+            if (!categoria_id) {
+                mostrarAlerta("Seleccione una categoría.", "warning");
+                return;
+            }
+
+            enviar("/api/categorizar", "POST", {
+                categoria_id: categoria_id
+            });
+        });
+
+        document.getElementById("btnDeshacer").addEventListener("click", () => {
+            enviar("/api/deshacer", "POST");
+        });
+
+        // Carga inicial
+        enviar("/api/estado", "GET");
+    </script>
+</body>
+</html>
